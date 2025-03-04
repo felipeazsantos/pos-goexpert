@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/google/uuid"
 
@@ -40,6 +41,18 @@ func main() {
 		panic(err)
 	}
 
+	product.Price = 100.0
+	err = updateProduct(db, product)
+	if err != nil {
+		panic(err)
+	}
+
+	p, err := selectProduct(db, product.ID)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Product: %s, possui o preço de %.2f\n", p.Name, p.Price)
 }
 
 func insertProduct(db *sql.DB, product *Product) error {
@@ -53,4 +66,32 @@ func insertProduct(db *sql.DB, product *Product) error {
 		return err
 	}
 	return nil
+}
+
+func updateProduct(db *sql.DB, product *Product) error {
+	stmt, err := db.Prepare(`update products set name = ?, price = ? where id = ?`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(product.Name, product.Price, product.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func selectProduct(db *sql.DB, id string) (*Product, error) {
+	stmt, err := db.Prepare("select id, name, price from products where id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	var p Product
+	row := stmt.QueryRow(id)
+	err = row.Scan(&p.ID, &p.Name, &p.Price)
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
 }

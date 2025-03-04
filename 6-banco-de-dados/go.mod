@@ -1,4 +1,4 @@
-module github.com/felipeazsantos/posgoexpert/6/1
+module github.com/felipeazsantos/posgoexpert/database
 
 go 1.23.2
 
