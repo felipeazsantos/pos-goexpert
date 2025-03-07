@@ -1,4 +1,4 @@
-module github.com/felipeazsantos/posgoexpert/database
+module github.com/felipeazsantos/posgoexpert/crud
 
 go 1.23.2
 
