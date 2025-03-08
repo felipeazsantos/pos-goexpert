@@ -1,15 +1,32 @@
 package main
 
 import (
+	"fmt"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
+type Category struct {
+	ID       int `gorm:"primaryKey"`
+	Name     string
+	Products []Product
+}
+
 type Product struct {
-	ID    int `gorm:"primaryKey"`
-	Name  string
-	Price float64
+	ID           int `gorm:"primaryKey"`
+	Name         string
+	Price        float64
+	CategoryID   int
+	Category     Category
+	SerialNumber SerialNumber
 	gorm.Model
+}
+
+type SerialNumber struct {
+	ID        int `gorm:"primaryKey"`
+	Number    string
+	ProductID int
 }
 
 func main() {
@@ -18,52 +35,96 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&Product{})
-	// db.Create(&Product{
-	// 	Name:  "Notebook",
-	// 	Price: 1000.0,
-	// })
+	db.AutoMigrate(&Product{}, &Category{}, &SerialNumber{})
+
+	gormRelations(db)
+
+}
+
+func gormRelations(db *gorm.DB) {
+	// create category
+	// category := Category{Name: "Eletronics"}
+	// db.Create(&category)
+
+	// create prdocut
+	product := Product{
+		Name:       "Mouse",
+		Price:      1000.0,
+		CategoryID: 1,
+		// CategoryID: category.ID,
+	}
+	db.Create(&product)
+
+	// create a serial number
+	db.Create(&SerialNumber{
+		Number:    "123456",
+		ProductID: product.ID,
+	})
+
+	// var products []Product
+	// db.Preload("Category").Preload("SerialNumber").Find(&products)
+	// for _, product := range products {
+	// 	fmt.Println(product.Name, product.Category.Name, product.SerialNumber.Number)
+	// }
+
+	var categories []Category
+	err := db.Model(&Category{}).Preload("Products").Find(&categories).Error
+	if err != nil {
+		panic(err)
+	}
+
+	for _, category := range categories {
+		for _, product := range category.Products {
+			fmt.Println(product.Name, category.Name)
+		}
+	}
+}
+
+func gormCrud(db *gorm.DB) {
+	db.Create(&Product{
+		Name:  "Notebook",
+		Price: 1000.0,
+	})
 
 	// create batch
-	// products := []Product{
-	// 	{Name: "Notebook", Price: 1999.0},
-	// 	{Name: "Keyboard", Price: 150.0},
-	// 	{Name: "Mouse", Price: 48.0},
-	// }
-	// db.Create(&products)
+	productsCreateBatch := []Product{
+		{Name: "Notebook", Price: 1999.0},
+		{Name: "Keyboard", Price: 150.0},
+		{Name: "Mouse", Price: 48.0},
+	}
+	db.Create(&productsCreateBatch)
 
 	// select one
-	// var product Product
-	// db.First(&product, 2)
-	// db.First(&product, "name = ?", "Mouse")
-	// fmt.Println(product)
+	var productSelecOne Product
+	db.First(&productSelecOne, 2)
+	db.First(&productSelecOne, "name = ?", "Mouse")
+	fmt.Println(productSelecOne)
 
 	// select all
-	// var products []Product
-	// db.Find(&products)
-	// fmt.Printf("Products %v\n", products)
+	var productsSelectAll []Product
+	db.Find(&productsSelectAll)
+	fmt.Printf("Products %v\n", productsSelectAll)
 
 	// where
-	// var p Product
-	// db.Where("name = ?", "Keyboard").First(&p)
-	// fmt.Println(p)
+	var productWhere Product
+	db.Where("name = ?", "Keyboard").First(&productWhere)
+	fmt.Println(productWhere)
 
 	// update
-	// var p Product
-	// db.First(&p, 1)
-	// p.Name = "New Mouse"
-	// db.Save(&p)
+	var productUpdate Product
+	db.First(&productUpdate, 1)
+	productUpdate.Name = "New Mouse"
+	db.Save(&productUpdate)
 
-	// var products []Product
-	// db.Find(&products)
+	var productsUpdate []Product
+	db.Find(&productsUpdate)
 
-	// for _, product := range products {
-	// 	fmt.Println(product)
-	// }
+	for _, product := range productsUpdate {
+		fmt.Println(product)
+	}
 
 	// delete
-	// var p Product
-	// db.First(&p, 1)
-	// db.Delete(&p)
-
+	var productDelete Product
+	db.First(&productDelete, 1)
+	db.Delete(&productDelete)
 }
