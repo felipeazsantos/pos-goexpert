@@ -22,3 +22,4 @@ func CalculateTax2(amount float64) float64 {
 	}
 	return 5.0
 }
+
