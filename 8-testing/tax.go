@@ -2,6 +2,15 @@ package tax
 
 import "time"
 
+type Repository interface {
+	SaveTax(tax float64) error
+}
+
+func CalculateAndSaveTax(amount float64, repository Repository) error {
+	tax := CalculateTax(amount)
+	return repository.SaveTax(tax)
+}
+
 func CalculateTax(amount float64) float64 {
 	if amount <= 0 {
 		return 0
