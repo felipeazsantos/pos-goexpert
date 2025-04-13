@@ -56,15 +56,15 @@ func TestFindAll(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
-	productDB := NewProduct(db)
 
 	for i := 1; i < 24; i++ {
 		product, err := entity.NewProduct(fmt.Sprintf("Product %d", i), fmt.Sprintf("Description %d", i), rand.Float64()*100)
 		assert.NoError(t, err)
-		err = productDB.Create(product)
+		err = db.Create(product).Error
 		assert.NoError(t, err)
 	}
 
+	productDB := NewProduct(db)
 	products, err := productDB.FindAll(1, 10, "asc")
 	assert.NoError(t, err)
 	assert.Equal(t, 10, len(products))
