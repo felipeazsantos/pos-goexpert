@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/entity"
@@ -54,30 +56,32 @@ func TestFindAll(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
-
-	product1, err := entity.NewProduct("Product 1", "Description 1", 10)
-	assert.NoError(t, err)
-
-	product2, err := entity.NewProduct("Product 2", "Description 2", 20)
-	assert.NoError(t, err)
-
-	product3, err := entity.NewProduct("Product 3", "Description 3", 30)
-	assert.NoError(t, err)
-
 	productDB := NewProduct(db)
-	err = productDB.Create(product1)
-	assert.NoError(t, err)
-	err = productDB.Create(product2)
-	assert.NoError(t, err)
-	err = productDB.Create(product3)
-	assert.NoError(t, err)
+
+	for i := 1; i < 24; i++ {
+		product, err := entity.NewProduct(fmt.Sprintf("Product %d", i), fmt.Sprintf("Description %d", i), rand.Float64()*100)
+		assert.NoError(t, err)
+		err = productDB.Create(product)
+		assert.NoError(t, err)
+	}
 
 	products, err := productDB.FindAll(1, 10, "asc")
 	assert.NoError(t, err)
+	assert.Equal(t, 10, len(products))
+	assert.Equal(t, products[0].Name, "Product 1")
+	assert.Equal(t, products[9].Name, "Product 10")
+
+	products, err = productDB.FindAll(2, 10, "asc")
+	assert.NoError(t, err)
+	assert.Equal(t, 10, len(products))
+	assert.Equal(t, products[0].Name, "Product 11")
+	assert.Equal(t, products[9].Name, "Product 20")
+
+	products, err = productDB.FindAll(3, 10, "asc")
+	assert.NoError(t, err)
 	assert.Equal(t, 3, len(products))
-	assert.Equal(t, product1.ID, products[0].ID)
-	assert.Equal(t, product2.ID, products[1].ID)
-	assert.Equal(t, product3.ID, products[2].ID)
+	assert.Equal(t, products[0].Name, "Product 21")
+	assert.Equal(t, products[2].Name, "Product 23")
 }
 
 func TestUpdate(t *testing.T) {
