@@ -9,7 +9,7 @@ type Product struct {
 	DB *gorm.DB
 }
 
-func NewProduct(db *gorm.DB) *Product {
+func NewProduct(db *gorm.DB) ProductInterface {
 	return &Product{DB: db}
 }
 
@@ -23,7 +23,7 @@ func (p *Product) FindByID(id string) (*entity.Product, error) {
 	return &product, err
 }
 
-func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error) {	
+func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error) {
 	var products []entity.Product
 	if sort != "" && sort != "asc" && sort != "desc" {
 		sort = "asc"
@@ -56,4 +56,3 @@ func (p *Product) Delete(id string) error {
 
 	return p.DB.Delete(product).Error
 }
-
