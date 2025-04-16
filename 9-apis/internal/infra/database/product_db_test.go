@@ -11,10 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestCreateNewProduct(t *testing.T) {
+func createProductTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
+	return db
+}
+
+func TestCreateNewProduct(t *testing.T) {
+	db := createProductTestDB(t)
 
 	product, err := entity.NewProduct("Product 1", "Description 1", 10)
 	assert.NoError(t, err)
@@ -33,9 +38,7 @@ func TestCreateNewProduct(t *testing.T) {
 }
 
 func TestFindByID(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	assert.NoError(t, err)
-	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
+	db := createProductTestDB(t)
 
 	product, err := entity.NewProduct("Product 1", "Description 1", 10)
 	assert.NoError(t, err)
@@ -53,9 +56,7 @@ func TestFindByID(t *testing.T) {
 }
 
 func TestFindAll(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	assert.NoError(t, err)
-	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
+	db := createProductTestDB(t)
 
 	for i := 1; i < 24; i++ {
 		product, err := entity.NewProduct(fmt.Sprintf("Product %d", i), fmt.Sprintf("Description %d", i), rand.Float64()*100)
@@ -85,9 +86,7 @@ func TestFindAll(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	assert.NoError(t, err)
-	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
+	db := createProductTestDB(t)
 
 	product, err := entity.NewProduct("Product 1", "Description 1", 10)
 	assert.NoError(t, err)
@@ -108,9 +107,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	assert.NoError(t, err)
-	assert.NoError(t, db.AutoMigrate(&entity.Product{}))
+	db := createProductTestDB(t)
 
 	product, err := entity.NewProduct("Product 1", "Description 1", 10)
 	assert.NoError(t, err)
