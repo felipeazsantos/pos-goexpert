@@ -103,7 +103,6 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product.ID.String() // Ensure ID is set
 	err = h.ProductDB.Update(&product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
