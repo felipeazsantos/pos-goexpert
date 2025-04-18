@@ -40,19 +40,9 @@ func (p *Product) FindAll(page, limit int, sort string) ([]entity.Product, error
 }
 
 func (p *Product) Update(product *entity.Product) error {
-	_, err := p.FindByID(product.ID.String())
-	if err != nil {
-		return err
-	}
-
 	return p.DB.Save(product).Error
 }
 
 func (p *Product) Delete(id string) error {
-	product, err := p.FindByID(id)
-	if err != nil {
-		return err
-	}
-
-	return p.DB.Delete(product).Error
+	return p.DB.Delete(&entity.Product{}, "id = ?", id).Error
 }
