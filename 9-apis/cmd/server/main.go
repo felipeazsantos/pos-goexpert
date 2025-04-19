@@ -32,6 +32,9 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	userDB := database.NewUser(db)
+	userHandler := handlers.NewUserHandler(userDB)
+
 	// Product Routes
 	r.Route("/products", func(r chi.Router) {
 		r.Post("/", productHandler.CreateProduct)
@@ -39,6 +42,11 @@ func main() {
 		r.Get("/{id}", productHandler.GetProduct)
 		r.Put("/{id}", productHandler.UpdateProduct)
 		r.Delete("/{id}", productHandler.DeleteProduct)
+	})
+
+	// User Routes
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/", userHandler.CreateUser)
 	})
 
 	log.Println("Server is running on port 8080")
