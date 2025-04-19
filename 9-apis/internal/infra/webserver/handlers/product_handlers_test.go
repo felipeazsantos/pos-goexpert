@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"context"
-	"errors"
 
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/entity"
 	entityPkg "github.com/felipeazsantos/pos-goexpert/apis/pkg/entity"
@@ -16,21 +16,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockProductDB struct {
+type MockDB struct {
 	mock.Mock
 }
 
-func (m *MockProductDB) Create(product *entity.Product) error {
+func (m *MockDB) Create(product *entity.Product) error {
 	args := m.Called(product)
 	return args.Error(0)
 }
 
-func (m *MockProductDB) FindAll(page, limit int, sort string) ([]entity.Product, error) {
+func (m *MockDB) FindAll(page, limit int, sort string) ([]entity.Product, error) {
 	args := m.Called(page, limit, sort)
 	return args.Get(0).([]entity.Product), args.Error(1)
 }
 
-func (m *MockProductDB) FindByID(id string) (*entity.Product, error) {
+func (m *MockDB) FindByID(id string) (*entity.Product, error) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -38,24 +38,24 @@ func (m *MockProductDB) FindByID(id string) (*entity.Product, error) {
 	return args.Get(0).(*entity.Product), args.Error(1)
 }
 
-func (m *MockProductDB) Update(product *entity.Product) error {
+func (m *MockDB) Update(product *entity.Product) error {
 	args := m.Called(product)
 	return args.Error(0)
 }
 
-func (m *MockProductDB) Delete(id string) error {
+func (m *MockDB) Delete(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
 
 func TestCreateProduct(t *testing.T) {
-	mockDB := new(MockProductDB)
+	mockDB := new(MockDB)
 	handler := NewProductHandler(mockDB)
 
 	t.Run("success", func(t *testing.T) {
 		product := &entity.Product{
-			Name:        "Test Product",
-			Price:       100.0,
+			Name: "Test Product",
+			Price: 100.0,
 			Description: "Test Description",
 		}
 		mockDB.On("Create", mock.AnythingOfType("*entity.Product")).Return(nil)
@@ -75,13 +75,12 @@ func TestCreateProduct(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		handler.CreateProduct(w, req)
-
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
 
 func TestListProducts(t *testing.T) {
-	mockDB := new(MockProductDB)
+	mockDB := new(MockDB)
 	handler := NewProductHandler(mockDB)
 
 	products := []entity.Product{
@@ -90,7 +89,6 @@ func TestListProducts(t *testing.T) {
 	}
 
 	mockDB.On("FindAll", 0, 10, "").Return(products, nil)
-
 	req := httptest.NewRequest(http.MethodGet, "/products", nil)
 	w := httptest.NewRecorder()
 
@@ -102,11 +100,11 @@ func TestListProducts(t *testing.T) {
 	var response []entity.Product
 	err := json.NewDecoder(w.Body).Decode(&response)
 	assert.NoError(t, err)
-	assert.Len(t, response, 2)
+	assert.Len(t, response, len(products))
 }
 
 func TestGetProduct(t *testing.T) {
-	mockDB := new(MockProductDB)
+	mockDB := new(MockDB)
 	handler := NewProductHandler(mockDB)
 
 	t.Run("success", func(t *testing.T) {
@@ -115,6 +113,7 @@ func TestGetProduct(t *testing.T) {
 			Price:       100.0,
 			Description: "Test Description",
 		}
+
 		mockDB.On("FindByID", "1").Return(product, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/products/1", nil)
@@ -124,7 +123,6 @@ func TestGetProduct(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		handler.GetProduct(w, req)
-
 		assert.Equal(t, http.StatusOK, w.Code)
 		mockDB.AssertExpectations(t)
 
@@ -134,7 +132,7 @@ func TestGetProduct(t *testing.T) {
 		assert.Equal(t, product.Name, response.Name)
 	})
 
-	t.Run("not found", func(t *testing.T) {
+	t.Run("not found", func (t *testing.T)  {
 		mockDB.On("FindByID", "999").Return(nil, errors.New("not found"))
 
 		req := httptest.NewRequest(http.MethodGet, "/products/999", nil)
@@ -151,21 +149,19 @@ func TestGetProduct(t *testing.T) {
 }
 
 func TestUpdateProduct(t *testing.T) {
-	mockDB := new(MockProductDB)
+	mockDB := new(MockDB)
 	handler := NewProductHandler(mockDB)
 
 	t.Run("success", func(t *testing.T) {
 		id := entityPkg.NewID()
 		product := &entity.Product{
-			ID:          id,
-			Name:        "Updated Product",
-			Price:       150.0,
-			Description: "Updated Description",
+			ID: id,
+			Name: "Updated product",
+			Price: 150.0,
+			Description: "Updated description",
 		}
-		
-		// Mock FindByID first
+
 		mockDB.On("FindByID", id.String()).Return(product, nil)
-		// Then mock Update
 		mockDB.On("Update", mock.AnythingOfType("*entity.Product")).Return(nil)
 
 		body, _ := json.Marshal(product)
@@ -195,7 +191,7 @@ func TestUpdateProduct(t *testing.T) {
 }
 
 func TestDeleteProduct(t *testing.T) {
-	mockDB := new(MockProductDB)
+	mockDB := new(MockDB)
 	handler := NewProductHandler(mockDB)
 
 	t.Run("success", func(t *testing.T) {
