@@ -10,6 +10,7 @@ import (
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/infra/webserver/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -37,6 +38,8 @@ func main() {
 
 	// Product Routes
 	r.Route("/products", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(cfg.TokenAuth))
+		r.Use(jwtauth.Authenticator)
 		r.Post("/", productHandler.CreateProduct)
 		r.Get("/", productHandler.ListProducts)
 		r.Get("/{id}", productHandler.GetProduct)
