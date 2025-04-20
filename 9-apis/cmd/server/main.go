@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	_, err := configs.LoadConfig(".")
+	cfg, err := configs.LoadConfig(".")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	userDB := database.NewUser(db)
-	userHandler := handlers.NewUserHandler(userDB)
+	userHandler := handlers.NewUserHandler(userDB, cfg.TokenAuth, cfg.JWTExpiresIn)
 
 	// Product Routes
 	r.Route("/products", func(r chi.Router) {
@@ -47,6 +47,7 @@ func main() {
 	// User Routes
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", userHandler.CreateUser)
+		r.Post("/generate_token", userHandler.GetJWT)
 	})
 
 	log.Println("Server is running on port 8080")
