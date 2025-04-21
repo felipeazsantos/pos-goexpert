@@ -32,9 +32,11 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.WithValue("jwt", cfg.TokenAuth))
+	r.Use(middleware.WithValue("jwtExpiresIn", cfg.JWTExpiresIn))
 
 	userDB := database.NewUser(db)
-	userHandler := handlers.NewUserHandler(userDB, cfg.TokenAuth, cfg.JWTExpiresIn)
+	userHandler := handlers.NewUserHandler(userDB)
 
 	// Product Routes
 	r.Route("/products", func(r chi.Router) {

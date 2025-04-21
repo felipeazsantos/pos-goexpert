@@ -10,7 +10,7 @@ Content-Type: application/json
 ###
 
 GET http://localhost:8080/products?page=1&limit=10&sort=asc
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDUxODE0NjYsInN1YiI6IjUyNmI2OTlmLTNkZmQtNDQxYi1iNDAzLThjNzlkMmZlNThkMCJ9.HSl-CPf7XQXq8OMubKpexe1ZOUooUrIgNMkuHJDy2-s
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDUyNTI4ODksInN1YiI6IjUyNmI2OTlmLTNkZmQtNDQxYi1iNDAzLThjNzlkMmZlNThkMCJ9.GoTKF6HU29_bZjFQVOhCSDax3EwHc0w8PFwSpIRkTCc
 
 ###
 
