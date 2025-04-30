@@ -227,3 +227,4 @@ func TestDeleteProduct(t *testing.T) {
 		mockDB.AssertExpectations(t)
 	})
 }
+
