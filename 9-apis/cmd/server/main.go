@@ -13,6 +13,8 @@ import (
 	"github.com/go-chi/jwtauth"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/felipeazsantos/pos-goexpert/apis/docs"
 )
 
 
@@ -72,6 +74,10 @@ func main() {
 		r.Post("/", userHandler.CreateUser)
 		r.Post("/generate_token", userHandler.GetJWT)
 	})
+
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/docs/doc.json"), 
+	))
 
 	log.Println("Server is running on port 8080")
 	http.ListenAndServe(":8080", r)
