@@ -5,18 +5,17 @@ import (
 	"net/http"
 
 	"github.com/felipeazsantos/pos-goexpert/apis/configs"
+	_ "github.com/felipeazsantos/pos-goexpert/apis/docs"
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/entity"
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/infra/database"
 	"github.com/felipeazsantos/pos-goexpert/apis/internal/infra/webserver/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	httpSwagger "github.com/swaggo/http-swagger"
-	_ "github.com/felipeazsantos/pos-goexpert/apis/docs"
 )
-
 
 // @title           Go Expert API
 // @version         1.0
@@ -76,7 +75,7 @@ func main() {
 	})
 
 	r.Get("/docs/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/docs/doc.json"), 
+		httpSwagger.URL("http://localhost:8080/docs/doc.json"),
 	))
 
 	log.Println("Server is running on port 8080")

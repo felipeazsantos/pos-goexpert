@@ -60,6 +60,18 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(accessToken)
 }
 
+// Create user godoc
+// @Summary Create a new user
+// @Description Create a new user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param input body dto.CreateUserInput true "User input"
+// @Success 201 {object} entity.User
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /users [post]
+// @Security ApiKeyAuth
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var input dto.CreateUserInput
 	err := json.NewDecoder(r.Body).Decode(&input)
@@ -70,13 +82,15 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := entity.NewUser(input.Name, input.Email, input.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errResponse := dto.ErrorResponse{Message: err.Error()}
+		http.Error(w, errResponse.Message, http.StatusBadRequest)
 		return
 	}
 
 	err = h.db.Create(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errResponse := dto.ErrorResponse{Message: err.Error()}
+		http.Error(w, errResponse.Message, http.StatusInternalServerError)
 		return
 	}
 
