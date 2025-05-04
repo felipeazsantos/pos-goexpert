@@ -19,6 +19,19 @@ func NewUserHandler(db database.UserInterface) *UserHandler {
 	return &UserHandler{db: db}
 }
 
+// GetJWT godoc
+// @Summary Get JWT token
+// @Description Get JWT token
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param input body dto.GetJWTInput true "User input"
+// @Success 200 {object} dto.GetJWTOutput
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /users/generate_token [post]
 func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	jwt := r.Context().Value("jwt").(*jwtauth.JWTAuth)
 	jwtExpiresIn := r.Context().Value("jwtExpiresIn").(int)
@@ -26,18 +39,21 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	var input dto.GetJWTInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errResponse := dto.ErrorResponse{Message: err.Error()}
+		http.Error(w, errResponse.Message, http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.db.FindByEmail(input.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		errResponse := dto.ErrorResponse{Message: err.Error()}
+		http.Error(w, errResponse.Message, http.StatusNotFound)
 		return
 	}
 
 	if !user.ValidatePassword(input.Password) {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		errResponse := dto.ErrorResponse{Message: "Invalid credentials"}
+		http.Error(w, errResponse.Message, http.StatusUnauthorized)
 		return
 	}
 
@@ -46,13 +62,12 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 		"exp": time.Now().Add(time.Second * time.Duration(jwtExpiresIn)).Unix(),
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errResponse := dto.ErrorResponse{Message: err.Error()}
+		http.Error(w, errResponse.Message, http.StatusInternalServerError)
 		return
 	}
 
-	accessToken := struct {
-		AccessToken string `json:"access_token"`
-	}{
+	accessToken := dto.GetJWTOutput{
 		AccessToken: token,
 	}
 
@@ -71,7 +86,6 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
 // @Router /users [post]
-// @Security ApiKeyAuth
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var input dto.CreateUserInput
 	err := json.NewDecoder(r.Body).Decode(&input)
