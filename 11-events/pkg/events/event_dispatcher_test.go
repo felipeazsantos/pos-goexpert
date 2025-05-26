@@ -64,6 +64,52 @@ func (suite *EventDispatcherTestSuite) TestEventDispatcher_Register() {
 	suite.Equal(suite.eventDispatcher.handlers[suite.event.GetName()][1], &suite.handler2)
 }
 
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Register_AlreadyRegistered() {
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.NoError(err)
+    suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.Error(err)
+	suite.Equal("handler already registered", err.Error())
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+	suite.Equal(suite.eventDispatcher.handlers[suite.event.GetName()][0], &suite.handler)
+}
+
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Clear() {
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.NoError(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler2)
+	suite.NoError(err)
+	suite.Equal(2, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+
+	err = suite.eventDispatcher.Register(suite.event2.GetName(), &suite.handler3)
+	suite.NoError(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event2.GetName()]))
+
+	suite.eventDispatcher.Clear()
+	suite.Equal(0, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+	suite.Equal(0, len(suite.eventDispatcher.handlers[suite.event2.GetName()]))
+}
+
+func (suite *EventDispatcherTestSuite) TestEventDispatcher_Has() {
+	err := suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler)
+	suite.NoError(err)
+	suite.Equal(1, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	err = suite.eventDispatcher.Register(suite.event.GetName(), &suite.handler2)
+	suite.NoError(err)
+	suite.Equal(2, len(suite.eventDispatcher.handlers[suite.event.GetName()]))
+
+	suite.True(suite.eventDispatcher.Has(suite.event.GetName(), &suite.handler))
+	suite.True(suite.eventDispatcher.Has(suite.event.GetName(), &suite.handler2))
+	suite.False(suite.eventDispatcher.Has(suite.event.GetName(), &suite.handler3))
+}
+
+
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(EventDispatcherTestSuite))
 }

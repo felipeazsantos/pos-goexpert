@@ -1,6 +1,9 @@
 package events
 
-import "errors"
+import (
+	"errors"
+	"slices"
+)
 
 type EventDispatcher struct {
 	handlers map[string][]EventHandlerInterface
@@ -22,4 +25,17 @@ func (d *EventDispatcher) Register(eventName string, handler EventHandlerInterfa
 
 	d.handlers[eventName] = append(d.handlers[eventName], handler)
 	return nil
+}
+
+func (d *EventDispatcher) Clear() {
+	for eventName := range d.handlers {
+		delete(d.handlers, eventName)
+	}
+}
+
+func (d *EventDispatcher) Has(eventName string, handler EventHandlerInterface) bool {
+	if handlers, exists := d.handlers[eventName]; exists {
+		return slices.Contains(handlers, handler)
+	}
+	return false
 }
