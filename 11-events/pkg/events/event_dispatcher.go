@@ -3,6 +3,7 @@ package events
 import (
 	"errors"
 	"slices"
+	"sync"
 )
 
 type EventDispatcher struct {
@@ -55,9 +56,12 @@ func (d *EventDispatcher) Has(eventName string, handler EventHandlerInterface) b
 
 func (d *EventDispatcher) Dispatch(event EventInterface) error {
 	if handlers, exists := d.handlers[event.GetName()]; exists {
+		wg := &sync.WaitGroup{}
 		for _, handler := range handlers {
-			handler.Handle(event)
+			wg.Add(1)
+			go handler.Handle(event, wg)
 		}
+		wg.Wait()
 	}
 	return nil
 }
