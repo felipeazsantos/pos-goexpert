@@ -27,6 +27,19 @@ func (d *EventDispatcher) Register(eventName string, handler EventHandlerInterfa
 	return nil
 }
 
+func (d *EventDispatcher) Remove(eventName string, handler EventHandlerInterface) error {
+	if handlers, exists := d.handlers[eventName]; exists {
+		for i, h := range handlers {
+			if h == handler {
+				d.handlers[eventName] = append(handlers[:i], handlers[i+1:]...)
+				return nil
+			}
+		}
+		return errors.New("handler not found")
+	}
+	return errors.New("event not found")
+}
+
 func (d *EventDispatcher) Clear() {
 	for eventName := range d.handlers {
 		delete(d.handlers, eventName)
