@@ -13,7 +13,7 @@ type Category struct {
 	Description string
 }
 
-func NewCategory(db *sql.DB) *Category {
+func NewCategoryDB(db *sql.DB) *Category {
 	return &Category{
 		db: db,
 	}
