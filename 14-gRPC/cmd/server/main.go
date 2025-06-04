@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"net"
 
+	"log"
+
 	"github.com/felipeazsantos/pos-goexpert/14-gRPC/internal/database"
 	"github.com/felipeazsantos/pos-goexpert/14-gRPC/internal/pb"
 	"github.com/felipeazsantos/pos-goexpert/14-gRPC/internal/service"
@@ -15,7 +17,7 @@ import (
 func main() {
 	db, err := sql.Open("sqlite3", "./db.sqlite")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
@@ -28,10 +30,12 @@ func main() {
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
+	log.Printf("gRPC server is listening on %s", lis.Addr().String())
+
 	if err := server.Serve(lis); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
