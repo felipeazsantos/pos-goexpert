@@ -11,17 +11,31 @@ import (
 )
 
 const createCategory = `-- name: CreateCategory :exec
-INSERT INTO category (id, name, description) VALUES (?, ?, ?)
+INSERT INTO category (name, description) VALUES (?, ?)
 `
 
 type CreateCategoryParams struct {
-	ID          int32
 	Name        string
 	Description sql.NullString
 }
 
 func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, createCategory, arg.ID, arg.Name, arg.Description)
+	_, err := q.db.ExecContext(ctx, createCategory, arg.Name, arg.Description)
+	return err
+}
+
+const createCourse = `-- name: CreateCourse :exec
+INSERT INTO course (name, description, category_id) VALUES (?, ?, ?)
+`
+
+type CreateCourseParams struct {
+	Name        string
+	Description sql.NullString
+	CategoryID  sql.NullInt32
+}
+
+func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) error {
+	_, err := q.db.ExecContext(ctx, createCourse, arg.Name, arg.Description, arg.CategoryID)
 	return err
 }
 
