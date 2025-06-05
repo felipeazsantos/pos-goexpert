@@ -62,12 +62,16 @@ func main() {
 	defer conn.Close()
 
 	courseDB := NewCourseDB(conn)
-	courseDB.createCourseAndCategory(ctx, db.CreateCategoryParams{
+	err = courseDB.createCourseAndCategory(ctx, db.CreateCategoryParams{
 		Name: "Go",
+		Description: sql.NullString{String: "Go programming language", Valid: true},
 	}, db.CreateCourseParams{
 		Name:        "Go Expert",
 		Description: sql.NullString{String: "Become an expert in Go", Valid: true},
 		CategoryID:  sql.NullInt32{Int32: 2, Valid: true},
 	})
+	if err != nil {
+		panic(err)
+	}
 
 }
