@@ -7,7 +7,43 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
+
+const createCategory = `-- name: CreateCategory :exec
+INSERT INTO category (id, name, description) VALUES (?, ?, ?)
+`
+
+type CreateCategoryParams struct {
+	ID          int32
+	Name        string
+	Description sql.NullString
+}
+
+func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) error {
+	_, err := q.db.ExecContext(ctx, createCategory, arg.ID, arg.Name, arg.Description)
+	return err
+}
+
+const deleteCategory = `-- name: DeleteCategory :exec
+DELETE FROM category WHERE id = ?
+`
+
+func (q *Queries) DeleteCategory(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteCategory, id)
+	return err
+}
+
+const getCategory = `-- name: GetCategory :one
+SELECT id, name, description FROM category WHERE id = ?
+`
+
+func (q *Queries) GetCategory(ctx context.Context, id int32) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategory, id)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
 
 const listCategories = `-- name: ListCategories :many
 SELECT id, name, description FROM category
@@ -34,4 +70,19 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateCategory = `-- name: UpdateCategory :exec
+UPDATE category SET name = ?, description = ? WHERE id = ?
+`
+
+type UpdateCategoryParams struct {
+	Name        string
+	Description sql.NullString
+	ID          int32
+}
+
+func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
+	_, err := q.db.ExecContext(ctx, updateCategory, arg.Name, arg.Description, arg.ID)
+	return err
 }
