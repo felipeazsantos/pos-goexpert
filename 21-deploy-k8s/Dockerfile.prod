@@ -1,0 +1,5 @@
+FROM golang:latest
+WORKDIR /app
+COPY . .
+RUN GOOS=linux go build -ldflags="-s -w" -o server .
+CMD ["./server"]
